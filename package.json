@@ -1,0 +1,25 @@
+{
+  "name": "traceroute-visualization",
+  "version": "1.0.0",
+  "description": "A script to visualize traceroute of your browser history",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvalenzuela/understanding-networks.git"
+  },
+  "author": "Cristobal Valenzuela <cvalenzuela@nyu.edu> (https://github.com/cvalenzuela)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cvalenzuela/understanding-networks/issues"
+  },
+  "homepage": "https://github.com/cvalenzuela/understanding-networks#readme",
+  "dependencies": {
+    "colors": "1.1.2",
+    "fs-extra": "4.0.2",
+    "geoip-lite": "1.2.1",
+    "sqlite3": "3.1.10"
+  }
+}
