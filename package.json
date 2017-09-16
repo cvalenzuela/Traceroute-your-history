@@ -4,7 +4,9 @@
   "description": "A script to visualize traceroute of your browser history",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node getData/index.js",
+    "build": "browserify createVis/createJS.js -o public/bundle.js",
+    "test": "watchify createVis/createJS.js -o public/bundle.js"
   },
   "repository": {
     "type": "git",
@@ -17,9 +19,17 @@
   },
   "homepage": "https://github.com/cvalenzuela/understanding-networks#readme",
   "dependencies": {
+    "browserify": "14.4.0",
     "colors": "1.1.2",
     "fs-extra": "4.0.2",
     "geoip-lite": "1.2.1",
-    "sqlite3": "3.1.10"
+    "live-server": "1.2.0",
+    "mappa-mundi": "0.0.4",
+    "p5": "0.5.14",
+    "sqlite3": "3.1.10",
+    "username": "3.0.0"
+  },
+  "devDependencies": {
+    "watchify": "3.9.0"
   }
 }
