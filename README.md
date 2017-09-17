@@ -1,14 +1,18 @@
-# Traceroute 
+# Traceroute your Browser History
 
 A node application to visualize your complete browser history.
-Currently only supports Chrome.
+Currently supports Chrome.
 
-```javascript
+Run it:
+
+```bash
 npm install
-```
-```javascript
+
 npm run start
 ```
+
+Bam!
+
 Todo: 
   - visualize amount of times visit
   - support for non found hops
