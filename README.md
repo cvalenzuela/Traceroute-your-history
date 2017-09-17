@@ -1,6 +1,6 @@
 # Traceroute your Browser History
 
-A node application to visualize your complete browser history.
+A node application to visualize the traceroute (hops and connections) of your complete browser history.
 Currently supports Chrome.
 
 Run it:

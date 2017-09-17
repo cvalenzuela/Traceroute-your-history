@@ -4,7 +4,7 @@
   "description": "A script to visualize traceroute of your browser history",
   "main": "index.js",
   "scripts": {
-    "start": "node getData/index.js",
+    "start": "node index.js",
     "build": "browserify createVis/createJS.js -o public/bundle.js",
     "test": "watchify createVis/createJS.js -o public/bundle.js"
   },

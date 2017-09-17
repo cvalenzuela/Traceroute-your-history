@@ -1,13 +1,5 @@
 /*
-======
-Traceroute script to visualize browser history of Chrome
-
-Assignment for Understanding Networks - Tom Igoe
-Fall 2017 @ NYU ITP
-
-By Cristobal Valenzuela
-cvalenzuela@nyu.edu
-======
+Traceroute the browser history 
 */
 
 const fs = require('fs-extra');
@@ -18,99 +10,98 @@ const spawn = require('child_process').spawn;
 const getBrowserHistory = require('./historyQuery');
 const createVisualization = require('./../createVis/index');
 
-let timeOut = 30; // seg
-let startDate = null;
-let endDate = null;
+let timeOut = 20; // seg
 
-console.log(`
-=============================
-Traceroute your browser history
-=============================
- `.blue)
+module.exports = (startDate, endDate) => {
 
-getBrowserHistory((history) => {
-  let routes = {};
-  let queu = [];
+  getBrowserHistory((history) => {
+    let routes = {};
+    let queu = [];
 
-  mkdirp('./public/', (err) => {
-    err ? console.error(String(err).red) : console.log('-- ./public directory created'.green);
-  });
+    mkdirp('./public/', (err) => {
+      err ? console.error(String(err).red) : console.log('-- ./public directory created'.green);
+    });
 
-  console.log('-- Starting traceroute with browser history...'.yellow);
-  let tracerouteURL = (url) => {
-    routes[url] = {
-      times: 1,
-      hops: []
+    console.log('-- Starting traceroute with browser history...'.yellow);
+    let tracerouteURL = (url) => {
+      routes[url] = {
+        times: 1,
+        hops: []
+      }
+
+      let traceroute = spawn('traceroute', ['-I', url]);
+      let finished = false;
+
+      traceroute.stdout.on('data', (data) => {
+        let hop = data.toString()
+        let ip = hop.substring(hop.lastIndexOf("(") + 1, hop.lastIndexOf(")"));
+        ip.length > 0 && routes[url].hops.push([ip, null, null]);
+      });
+      traceroute.stderr.on('data', (data) => {
+        console.log(('-- ' + data.toString()).grey);
+      });
+      traceroute.on('exit', (code) => {
+        if (!finished) {
+          console.log(('-- ' + url + ' traceroute finished.').green);
+
+          console.log(('-- Searching for ' + url + ' hops geoposition...').yellow);
+          routes[url].hops.forEach((hop) => {
+            let ipGeoPosition = geoip.lookup(hop[0]);
+            if (ipGeoPosition) {
+              hop[1] = ipGeoPosition.ll[0],
+              hop[2] = ipGeoPosition.ll[1]
+            }
+          });
+          console.log(('-- ' + url + ' hops geoposition finished').green);
+
+          fs.writeFile("./public/routes.json", JSON.stringify(routes), (err) => {
+            if (err) {
+              console.log(String(err).red);
+            } else {
+              console.log(`-- routes.json updated`.green);
+              queu.splice(queu.indexOf(url), 1);
+              queu.length == 0 && createVisualization();
+            }
+          });
+          finished = true;
+        }
+      });
+
+      setTimeout(() => {
+        if (!finished) {
+          console.log(('-- Timeout for ' + url).magenta);
+          finished = true;
+          traceroute.kill();
+          queu.splice(queu.indexOf(url), 1);
+          queu.length == 0 && createVisualization();
+        }
+      }, timeOut * 1000);
     }
 
-    let traceroute = spawn('traceroute', ['-I', url]);
-    let finished = false;
-    traceroute.stdout.on('data', (data) => {
-      let hop = data.toString()
-      let ip = hop.substring(hop.lastIndexOf("(") + 1, hop.lastIndexOf(")"));
-      ip.length > 0 && routes[url].hops.push([ip, null, null]);
-    });
-    traceroute.stderr.on('data', (data) => {
-      console.log(('-- ' + data.toString()).grey);
-    });
-    traceroute.on('exit', (code) => {
-      if (!finished) {
-        console.log(('-- ' + url + ' traceroute finished.').green);
-
-        console.log(('-- Searching for ' + url + ' hops geoposition...').yellow);
-        routes[url].hops.forEach((hop) => {
-          let ipGeoPosition = geoip.lookup(hop[0]);
-          //let ipGeoPosition = geoip.lookup('207.97.227.239');
-          if (ipGeoPosition) {
-            hop[1] = ipGeoPosition.ll[0],
-            hop[2] = ipGeoPosition.ll[1]
-          }
-        });
-        console.log(('-- ' + url + ' hops geoposition finished').green);
-
-        fs.writeFile("./public/routes.json", JSON.stringify(routes), (err) => {
-          if (err) {
-            console.log(String(err).red);
-          } else {
-            console.log(`-- routes.json updated`.green);
-            queu.splice(queu.indexOf(url), 1);
-            queu.length == 0 && createVisualization();
-          }
-        });
-        finished = true;
+    //tracerouteURL('google.com');
+    // Debug purpuses.
+    let testUrls = history.filter((e, i) => {
+      if (i < 40) {
+        return e
       }
     });
+    history = testUrls;
+    // Finish debug
 
-    setTimeout(() => {
-      if (!finished) {
-        console.log(('-- Timeout for ' + url).magenta);
-        finished = true;
-        traceroute.kill();
+    // Traceroute each url
+    let removeHttp = new RegExp('https?://', 'i');
+    history.forEach((element, index) => {
+      let url = element.url.replace(removeHttp, '').split('/')[0];
+      if (!routes[url]) {
+        queu.push(url)
+        tracerouteURL(url);
+      } else {
+        console.log(('-- ' + url + ' already tracerouted.').blue);
+        routes[url].times = routes[url].times + 1;
       }
-    }, timeOut * 1000);
-  }
+    })
 
-  //tracerouteURL('google.com');
-  // Debug purpuses.
-  let testUrls = history.filter((e, i) => {
-    if (i < 40) {
-      return e
-    }
-  });
-  history = testUrls;
-  // Finish debug
-
-  // Traceroute each url
-  let removeHttp = new RegExp('https?://', 'i');
-  history.forEach((element, index) => {
-    let url = element.url.replace(removeHttp, '').split('/')[0];
-    if (!routes[url]) {
-      queu.push(url)
-      tracerouteURL(url);
-    } else {
-      console.log(('-- ' + url + ' already tracerouted.').blue);
-      routes[url].times = routes[url].times + 1;
-    }
   })
 
-})
+
+}
