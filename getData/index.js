@@ -22,6 +22,12 @@ let timeOut = 30; // seg
 let startDate = null;
 let endDate = null;
 
+console.log(`
+=============================
+Traceroute your browser history
+=============================
+ `.blue)
+
 getBrowserHistory((history) => {
   let routes = {};
   let queu = [];
@@ -105,6 +111,6 @@ getBrowserHistory((history) => {
       console.log(('-- ' + url + ' already tracerouted.').blue);
       routes[url].times = routes[url].times + 1;
     }
-    
   })
+
 })

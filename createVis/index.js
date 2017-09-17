@@ -16,16 +16,21 @@ const params = {
 
 module.exports = () => {
   console.log(`-- Creating traceroute visualization...`.grey);
-
+  
   createHTML();
-
+  
   console.log(`-- Bundling js file...`.grey);
-  // let bundleFs = fs.createWriteStream('./public/bundle.js');
-  // browserify.add('./browser/main.js');
-  // browserify.bundle().pipe(bundleFs);
-
-  // bundleFs.on('finish', () => {
-  //   console.log(`-- bundle.js created. Launching server. ==> BAM!`.green);
-  //   liveServer.start(params);
-  // });
+  let bundleFs = fs.createWriteStream('./public/bundle.js');
+  browserify.add('./createVis/createJS.js');
+  browserify.bundle().pipe(bundleFs);
+  
+  bundleFs.on('finish', () => {
+    console.log(`-- bundle.js created. Launching server. ==> BAM!`.green);
+    console.log(`
+    =============================
+    Traceroute your browser history
+    =============================
+     `.blue)
+    liveServer.start(params);
+  });
 }
